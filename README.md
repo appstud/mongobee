@@ -19,21 +19,27 @@ The goal is to keep this tool simple and comfortable to use.
 With Maven
 ```xml
 <dependency>
-  <groupId>com.github.mongobee</groupId>
+  <groupId>com.github.appstud</groupId>
   <artifactId>mongobee</artifactId>
-  <version>0.13</version>
+  <version>0.14</version>
 </dependency>
 ```
 With Gradle
+Add github as a repository source with jitpack
+```groovy
+repositories {
+    maven { url "https://jitpack.io" }
+}
+```
 ```groovy
 compile 'org.javassist:javassist:3.18.2-GA' // workaround for ${javassist.version} placeholder issue*
-compile 'com.github.mongobee:mongobee:0.13'
+compile 'com.github.appstud:mongobee:0.14'
 ```
 
 ### Usage with Spring
 
 You need to instantiate Mongobee object and provide some configuration.
-If you use Spring can be instantiated as a singleton bean in the Spring context. 
+If you use Spring can be instantiated as a singleton bean in the Spring context.
 In this case the migration process will be executed automatically on startup.
 
 ```java
@@ -43,7 +49,7 @@ public Mongobee mongobee(){
   runner.setDbName("yourDbName");         // host must be set if not set in URI
   runner.setChangeLogsScanPackage(
        "com.example.yourapp.changelogs"); // the package to be scanned for changesets
-  
+
   return runner;
 }
 ```
@@ -80,12 +86,12 @@ mongodb://[username:password@]host1[:port1][,host2[:port2],...[,hostN[:portN]]][
 
 `ChangeLog` contains bunch of `ChangeSet`s. `ChangeSet` is a single task (set of instructions made on a database). In other words `ChangeLog` is a class annotated with `@ChangeLog` and containing methods annotated with `@ChangeSet`.
 
-```java 
+```java
 package com.example.yourapp.changelogs;
 
 @ChangeLog
 public class DatabaseChangelog {
-  
+
   @ChangeSet(order = "001", id = "someChangeId", author = "testAuthor")
   public void importantWorkToDo(DB db){
      // task implementation
@@ -132,7 +138,7 @@ public void someChange1() {
 @ChangeSet(order = "002", id = "someChangeWithMongoDatabase", author = "testAuthor")
 public void someChange2(MongoDatabase db) {
   // type: com.mongodb.client.MongoDatabase : original MongoDB driver v. 3.x, operations allowed by driver are possible
-  // example: 
+  // example:
   MongoCollection<Document> mycollection = db.getCollection("mycollection");
   Document doc = new Document("testName", "example").append("test", "1");
   mycollection.insertOne(doc);
@@ -142,7 +148,7 @@ public void someChange2(MongoDatabase db) {
 public void someChange3(DB db) {
   // This is deprecated in mongo-java-driver 3.x, use MongoDatabase instead
   // type: com.mongodb.DB : original MongoDB driver v. 2.x, operations allowed by driver are possible
-  // example: 
+  // example:
   DBCollection mycollection = db.getCollection("mycollection");
   BasicDBObject doc = new BasicDBObject().append("test", "1");
   mycollection .insert(doc);
@@ -173,8 +179,8 @@ public void someChange5(MongoTemplate mongoTemplate, Environment environment) {
 ```
 
 ### Using Spring profiles
-     
-**mongobee** accepts Spring's `org.springframework.context.annotation.Profile` annotation. If a change log or change set class is annotated  with `@Profile`, 
+
+**mongobee** accepts Spring's `org.springframework.context.annotation.Profile` annotation. If a change log or change set class is annotated  with `@Profile`,
 then it is activated for current application profiles.
 
 _Example 1_: annotated change set will be invoked for a `dev` profile
@@ -193,12 +199,12 @@ public class ChangelogForTestEnv{
   @ChangeSet(author = "testuser", id = "myTestChangest", order = "01")
   public void testingEnvOnly(DB db){
     // ...
-  } 
+  }
 }
 ```
 
 #### Enabling @Profile annotation (option)
-      
+
 To enable the `@Profile` integration, please inject `org.springframework.core.env.Environment` to you runner.
 
 ```java      
@@ -218,8 +224,8 @@ public Mongobee mongobee(Environment environment) {
 
 **Exception**:
 ```
-com.mongodb.WriteConcernException: { "serverUsed" : "localhost" , 
-"err" : "invalid ns to index" , "code" : 10096 , "n" : 0 , 
+com.mongodb.WriteConcernException: { "serverUsed" : "localhost" ,
+"err" : "invalid ns to index" , "code" : 10096 , "n" : 0 ,
 "connectionId" : 955 , "ok" : 1.0}
 ```
 
